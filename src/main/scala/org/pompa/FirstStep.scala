@@ -22,19 +22,32 @@ object FirstStep {
     LOGGER.debug(s"NumPartitions ${rdd.getNumPartitions}")
     val hugeRdd2 = ss.sparkContext.textFile("/home/utad/Escritorio/Datos/foods.txt")
 
-    rdd.take(10).foreach(x => println(x))
+    //Filtramos para quedarnos con los productos
+    val rdd_filtrado = hugeRdd2.filter(_.startsWith("product/productId:"))
 
-    LOGGER.debug(s"Numero de filas antes de memoria en fichero: ${hugeRdd2.count}")
-    hugeRdd2.cache
-    LOGGER.debug(s"Numero de filas despues de memoria en fichero: ${hugeRdd2.count}")
-    LOGGER.debug(s"Numero de filas despues de memoria en fichero: ${hugeRdd2.count}")
+    //Recorremos cada lineay le asignamos un 1 a cada producto y luego los agrupamos
+    val rdd_conteo = rdd_filtrado.flatMap(l => l.split("/n")).map(word => (word, 1)).reduceByKey(_ + _)
+
+    //Por último ordenamos de mayor a menor para ver los 20 productos mas vendidos
+    rdd_conteo.sortBy(_._2,false).collect.take(20).foreach(println)
+
+
+    //val hugeRdd2 = ss.sparkContext.textFile("/home/utad/Escritorio/Datos/foods.txt")
+
+    //rdd.take(10).foreach(x => println(x))
+
+
+    //LOGGER.debug(s"Numero de filas antes de memoria en fichero: ${hugeRdd2.count}")
+    //hugeRdd2.cache
+    //LOGGER.debug(s"Numero de filas despues de memoria en fichero: ${hugeRdd2.count}")
+    //LOGGER.debug(s"Numero de filas despues de memoria en fichero: ${hugeRdd2.count}")
 
     val count = rdd.count
 
     LOGGER.debug(s"Numero de filas en fichero: $count")
     LOGGER.error(s"Numero de filas en fichero: $count")
 
-    LOGGER.debug(s"Numero de filas en fichero: ${hugeRdd2.count}")
+    //LOGGER.debug(s"Numero de filas en fichero: ${hugeRdd2.count}")
     while(true){}
 
   }
